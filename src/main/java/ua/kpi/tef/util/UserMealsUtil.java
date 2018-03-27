@@ -18,19 +18,14 @@ import java.util.stream.Collectors;
 public class UserMealsUtil {
 
     public static List<UserMealWithExceed> getFilteredWithExceeded(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        HashMap<LocalDate, Integer> datesOfMeal = new HashMap<>();
+        Map<LocalDate, Integer> datesOfMeal = new HashMap<>();
         ArrayList<UserMealWithExceed> userMealWithExceeds = new ArrayList<>();
         for (UserMeal meal : mealList) {
-            LocalDate dayOfYear = meal.getDateTime().toLocalDate();
-            if (!datesOfMeal.containsKey(dayOfYear)) {
-                datesOfMeal.put(dayOfYear, meal.getCalories());
-            } else {
-                datesOfMeal.put(dayOfYear, datesOfMeal.get(dayOfYear) + meal.getCalories());
-            }
+            datesOfMeal.merge(meal.getDateTime().toLocalDate(), meal.getCalories(), (a, b) -> a + b);
         }
 
-        for(UserMeal meal : mealList){
-            if(TimeUtil.isBetween(meal.getDateTime().toLocalTime(), startTime, endTime)) {
+        for (UserMeal meal : mealList) {
+            if (TimeUtil.isBetween(meal.getDateTime().toLocalTime(), startTime, endTime)) {
                 userMealWithExceeds.add(new UserMealWithExceed(meal.getDateTime(), meal.getDescription(), meal.getCalories(),
                         datesOfMeal.get(meal.getDateTime().toLocalDate()) > caloriesPerDay));
             }
